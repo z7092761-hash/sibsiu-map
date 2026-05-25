@@ -6,8 +6,6 @@
     <title>Интерактивный кампус СибГИУ</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
         body {
             background-color: var(--tg-theme-bg-color, #ffffff);
@@ -26,10 +24,6 @@
             stroke: #dc2626 !important;
             stroke-width: 3px !important;
         }
-        #map {
-            height: 450px;
-            border-radius: 12px;
-        }
     </style>
 </head>
 <body class="p-3 select-none flex flex-col h-screen justify-between">
@@ -43,11 +37,6 @@
             <button onclick="searchBuilding()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">Найти</button>
         </div>
 
-        <div class="flex justify-center gap-2 mb-3">
-            <button onclick="switchMode('schema')" id="btn-schema" class="px-4 py-1.5 rounded-full font-semibold text-xs shadow-sm bg-blue-600 text-white">📊 Схема кампуса</button>
-            <button onclick="switchMode('gps')" id="btn-gps" class="px-4 py-1.5 rounded-full font-semibold text-xs shadow-sm bg-gray-200 text-gray-700">🗺️ Реальная карта</button>
-        </div>
-
         <div id="info-box" class="mb-3 p-3 rounded-lg text-sm hidden shadow-sm" style="background: var(--tg-theme-secondary-bg-color, #e5e7eb)">
             <div class="font-bold text-blue-700 text-base" id="info-title">Корпус</div>
             <div class="text-xs mt-1 text-gray-700 leading-relaxed" id="info-desc">Описание...</div>
@@ -58,7 +47,7 @@
     <div class="flex-grow w-full max-w-xl mx-auto flex items-center justify-center border rounded-xl p-2 shadow-inner bg-slate-50 overflow-hidden" style="border-color: var(--tg-theme-hint-color, #e5e7eb);">
         
         <div id="schema-view" class="w-full h-full flex items-center justify-center">
-            <svg viewBox="0 0 500 520" class="w-full h-full max-h-[65vh]" xmlns="http://www.w3.org/2000/svg">
+            <svg viewBox="0 0 500 520" class="w-full h-full max-h-[70vh]" xmlns="http://www.w3.org/2000/svg">
                 
                 <path d="M 245 340 L 210 305" stroke="#0082c8" stroke-width="8" stroke-linecap="round" fill="none" opacity="0.4" />
                 <path d="M 245 340 L 210 305" stroke="#0082c8" stroke-width="2" stroke-dasharray="4 4" stroke-linecap="round" fill="none" />
@@ -103,9 +92,6 @@
             </svg>
         </div>
 
-        <div id="gps-view" class="w-full h-full hidden">
-            <div id="map" class="w-full h-full"></div>
-        </div>
     </div>
 
     <script>
@@ -114,55 +100,16 @@
         tg.expand();
 
         const campusData = {
-            1: { title: "1. Главный корпус", desc: "Ректорат, приемная комиссия, главный вход, бухгалтерия, библиотека, коворкинг и администрация университета.", coords: [53.75620, 87.12740] },
-            2: { title: "2. Спорткомплекс", desc: "Спортивные залы, фитнес-зоны, кафедры физического воспитания, секции и проведение соревнований.", coords: [53.75630, 87.12870] },
-            3: { title: "3. Столовая", desc: "Основной комбинат питания студентов, буфеты и обеденные зоны СибГИУ.", coords: [53.75660, 87.12750] },
-            4: { title: "4. Блок поточных аудиторий", desc: "Большие лекционные амфитеатры для проведения потоковых занятий и общих лекций.", coords: [53.75680, 87.12650] },
-            5: { title: "5. Металлургический корпус", desc: "Институт металлургии и материаловедения. Аудитории, научные лаборатории и учебные центры.", coords: [53.75710, 87.12580] },
-            6: { title: "6. Горно-технологический корпус", desc: "Институт горного дела и геосистем, а также ИИТиАС (Информационные технологии и автоматизированные системы).", coords: [53.75770, 87.12670] },
-            7: { title: "7. Блок тяжелых лабораторий 1", desc: "Лабораторные стенды симуляции проката, физики металлов и термической обработки.", coords: [53.75730, 87.12640] },
-            8: { title: "8. Блок тяжелых лабораторий 2", desc: "Исследовательские комплексы кафедр горного дела, геодезии и вентиляции шахт.", coords: [53.75760, 87.12740] },
-            9: { title: "9. Культурный центр", desc: "Актовый зал, студенческий клуб, репетиционные залы, творческие студии, проведение концертов.", coords: [53.75680, 87.12470] }
+            1: { title: "1. Главный корпус", desc: "Ректорат, приемная комиссия, главный вход, бухгалтерия, библиотека, коворкинг и администрация университета." },
+            2: { title: "2. Спорткомплекс", desc: "Спортивные залы, фитнес-зоны, кафедры физического воспитания, секции и проведение соревнований." },
+            3: { title: "3. Столовая", desc: "Основной комбинат питания студентов, буфеты и обеденные зоны СибГИУ." },
+            4: { title: "4. Блок поточных аудиторий", desc: "Большие лекционные амфитеатры для проведения потоковых занятий и общих лекций." },
+            5: { title: "5. Металлургический корпус", desc: "Институт металлургии и материаловедения. Аудитории, научные лаборатории и учебные центры." },
+            6: { title: "6. Горно-технологический корпус", desc: "Институт горного дела и геосистем, а также ИИТиАС (Информационные технологии и автоматизированные системы)." },
+            7: { title: "7. Блок тяжелых лабораторий 1", desc: "Лабораторные стенды симуляции проката, физики металлов и термической обработки." },
+            8: { title: "8. Блок тяжелых лабораторий 2", desc: "Исследовательские комплексы кафедр горного дела, геодезии и вентиляции шахт." },
+            9: { title: "9. Культурный центр", desc: "Актовый зал, студенческий клуб, репетиционные залы, творческие студии, проведение концертов." }
         };
-
-        let mapInitialized = false;
-        let map;
-
-        function switchMode(mode) {
-            document.querySelectorAll('.building').forEach(b => b.classList.remove('highlighted'));
-            if (mode === 'schema') {
-                document.getElementById('schema-view').classList.remove('hidden');
-                document.getElementById('gps-view').classList.add('hidden');
-                document.getElementById('btn-schema').className = "px-4 py-1.5 rounded-full font-semibold text-xs shadow-sm bg-blue-600 text-white";
-                document.getElementById('btn-gps').className = "px-4 py-1.5 rounded-full font-semibold text-xs shadow-sm bg-gray-200 text-gray-700";
-            } else {
-                document.getElementById('schema-view').classList.add('hidden');
-                document.getElementById('gps-view').classList.remove('hidden');
-                document.getElementById('btn-gps').className = "px-4 py-1.5 rounded-full font-semibold text-xs shadow-sm bg-blue-600 text-white";
-                document.getElementById('btn-schema').className = "px-4 py-1.5 rounded-full font-semibold text-xs shadow-sm bg-gray-200 text-gray-700";
-                
-                if (!mapInitialized) {
-                    initMap();
-                }
-            }
-        }
-
-        function initMap() {
-            map = L.map('map').setView([53.756988, 87.126615], 17);
-            
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap'
-            }).addTo(map);
-
-            Object.keys(campusData).forEach(id => {
-                const data = campusData[id];
-                L.marker(data.coords)
-                    .addTo(map)
-                    .bindPopup(`<b>${data.title}</b><br>${data.desc}`);
-            });
-
-            mapInitialized = true;
-        }
 
         function selectBuilding(id) {
             document.querySelectorAll('.building').forEach(b => b.classList.remove('highlighted'));
@@ -192,7 +139,6 @@
             });
 
             if (foundId) {
-                switchMode('schema');
                 selectBuilding(foundId);
             } else {
                 alert("Объект не найден. Введите номер корпуса (1-9) или название.");
